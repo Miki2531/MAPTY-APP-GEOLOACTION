@@ -11,33 +11,91 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
-let map, mapEvent;
-navigator.geolocation.getCurrentPosition(function (position) {
-  const { latitude } = position.coords;
-  const { longitude } = position.coords;
-  console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+class workout {
+  data = new Date();
+  id = (Date.now() + '').slice(10);
+  constructor(distance, duration, coords) {
+    this.distance = distance;
+    this.duration = duration;
+    this.coords = coords;
+  }
+}
 
-  const coords = [latitude, longitude];
-  map = L.map('map').setView(coords, 13);
+class Running extends workout {
+  constructor(distance, duration, coords, cadence) {
+    super(distance, duration, coords);
+    this.cadence = cadence;
+    this.calcaPace();
+  }
 
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(map);
+  calcaPace() {
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+}
 
-  map.on(
-    'click',
-    function (mapE) {
-      mapEvent = mapE;
-      form.classList.remove('hidden');
-      inputDistance.focus();
-    },
-    function () {
-      alert(`Could not get the current position`);
-    }
-  );
+class Cycling extends workout {
+  constructor(distance, duration, coords, elevationGain) {
+    super(distance, duration, coords);
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
+  }
 
-  form.addEventListener('submit', function (e) {
+  calcSpeed() {
+    this.speed = this.distance / (this.duration / 60);
+    return this.speed;
+  }
+}
+
+// const run1 = new Running(23, 10, [123, 34], 24);
+// console.log(run1);
+
+class App {
+  #map;
+  #mapEvent;
+  constructor() {
+    form.addEventListener('submit', this._netWorkout.bind(this));
+
+    inputType.addEventListener('change', this._toggleElevationField);
+  }
+
+  _getPosition() {
+    navigator.geolocation.getCurrentPosition(
+      this._loadMap.bind(this),
+      function () {
+        alert(`Could not get the current position`);
+      }
+    );
+  }
+
+  _loadMap(position) {
+    const { latitude } = position.coords;
+    const { longitude } = position.coords;
+    console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+
+    const coords = [latitude, longitude];
+    this.#map = L.map('map').setView(coords, 13);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(this.#map);
+
+    this.#map.on('click', this._showForm.bind(this));
+  }
+
+  _showForm(mapE) {
+    this.#mapEvent = mapE;
+    form.classList.remove('hidden');
+    inputDistance.focus();
+  }
+
+  _toggleElevationField() {
+    inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
+    inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+  }
+
+  _netWorkout(e) {
     e.preventDefault();
 
     inputDistance.value =
@@ -45,10 +103,9 @@ navigator.geolocation.getCurrentPosition(function (position) {
       inputCadence.value =
       inputElevation.value =
         '';
-    console.log(mapEvent);
-    const { lat, lng } = mapEvent.latlng;
+    const { lat, lng } = this.#mapEvent.latlng;
     L.marker([lat, lng])
-      .addTo(map)
+      .addTo(this.#map)
       .bindPopup(
         L.popup({
           maxWidth: 250,
@@ -60,10 +117,8 @@ navigator.geolocation.getCurrentPosition(function (position) {
       )
       .setPopupContent('Ethio Location')
       .openPopup();
-  });
-});
+  }
+}
 
-inputType.addEventListener('change', function () {
-  inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
-  inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
-});
+const app = new App();
+app._getPosition();
