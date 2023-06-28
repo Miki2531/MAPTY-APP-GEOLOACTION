@@ -205,6 +205,8 @@ class App {
 
     // Set local storage to all workouts
     this._setLocalStorage();
+    // edit a file
+    this._editContent();
   }
 
   _renderWorkoutMarker(workout) {
@@ -308,6 +310,8 @@ class App {
       this._renderWorkout(work);
     });
   }
+
+  _editContent() {}
   reset() {
     localStorage.removeItem('workouts');
   }
