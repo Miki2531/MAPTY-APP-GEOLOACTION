@@ -83,6 +83,7 @@ class App {
     this._getPosition();
 
     // Get data from local storage
+    this._getLocalStorage();
 
     // Attach event handlers
     form.addEventListener('submit', this._newWorkout.bind(this));
@@ -203,7 +204,7 @@ class App {
     this._hideForm();
 
     // Set local storage to all workouts
-    this._setLocalStorage()
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -297,7 +298,16 @@ class App {
   }
 
   _setLocalStorage() {
-    localStorage.setItem('workout', JSON.stringify(this.#workouts))
+    localStorage.setItem('workout', JSON.stringify(this.#workouts));
+  }
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    console.log(data);
+    if (!data) return;
+    this.#workouts = data;
+    this.#workouts.forEach(work => {
+      this._renderWorkout(work);
+    });
   }
 }
 
