@@ -294,20 +294,22 @@ class App {
     });
 
     // using the publick interface
-    workout.click();
+    // workout.click();
   }
 
   _setLocalStorage() {
-    localStorage.setItem('workout', JSON.stringify(this.#workouts));
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
   }
   _getLocalStorage() {
     const data = JSON.parse(localStorage.getItem('workouts'));
-    console.log(data);
     if (!data) return;
     this.#workouts = data;
     this.#workouts.forEach(work => {
       this._renderWorkout(work);
     });
+  }
+  reset() {
+    localStorage.removeItem('workouts');
   }
 }
 
